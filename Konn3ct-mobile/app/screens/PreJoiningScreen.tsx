@@ -6,51 +6,98 @@ import {
   pixelSizeVertical,
 } from "@/config/normalize";
 import React, { useEffect, useRef, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ControlIcon from "@/components/ControlIcon";
 import AppButton from "@/components/AppButton";
 import DisplayField from "@/components/DisplayField";
 import { Camera, CameraType } from "expo-camera/legacy";
+import AppModal from "@/components/AppModal";
+import DeviceSettingsModal from "@/modals/DeviceSettingsModal";
+import { Ionicons } from "@expo/vector-icons";
+import { Audio } from "expo-av";
 
 interface Props {}
 
 function PreJoiningScreen({}: Props) {
   const { top } = useSafeAreaInsets();
 
-  const [hasCamPermission, setHasCamPermission] = useState<boolean>(false);
-  const [hasMicPermission, setMicCamPermission] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState(false);
+  const [hasCamPermission, setHasCamPermission] = useState(false);
+  const [hasMicPermission, setHasMicPermission] = useState(false);
   const [isCameraOn, setIsCameraOn] = useState(true);
+  const [isMicEnabled, setIsMicEnabled] = useState(false);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const cameraRef = useRef<Camera | null>(null);
-  const [ratio, setRatio] = useState<string>("4:3");
 
-  const toggleCamera = () => setIsCameraOn((prevState) => !prevState);
+  const inactiveMic = !hasMicPermission || !isMicEnabled;
+  const inactiveCam = !hasCamPermission || !isCameraOn;
+
+  async function toggleCamera() {
+    if (hasCamPermission) {
+      setIsCameraOn(!isCameraOn);
+    } else {
+      Alert.alert(
+        "Permission Required",
+        "You need to grant Konn3ct permission to use this functionality.\nGo to your settings to do so."
+      );
+    }
+  }
+
+  async function toggleMic() {
+    if (hasMicPermission) {
+      if (isMicEnabled) {
+        await stopRecording();
+      } else {
+        await startRecording();
+      }
+    } else {
+      Alert.alert(
+        "Permission Required",
+        "You need to grant Konn3ct permission to use this functionality.\nGo to your settings to do so."
+      );
+    }
+  }
+
+  const startRecording = async () => {
+    try {
+      await Audio.setIsEnabledAsync(true);
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+      const newRecording = new Audio.Recording();
+      await newRecording.prepareToRecordAsync();
+      await newRecording.startAsync();
+
+      setRecording(newRecording);
+      setIsMicEnabled(true);
+    } catch (err) {
+      console.log("Failed to start recording", err);
+    }
+  };
+
+  const stopRecording = async () => {
+    if (recording) {
+      await Audio.setIsEnabledAsync(false);
+
+      await recording.stopAndUnloadAsync();
+      setRecording(null);
+      setIsMicEnabled(false);
+    }
+  };
+
   async function requestPermission() {
-    const { status: micStatus } =
-      await Camera.requestMicrophonePermissionsAsync();
     const { status } = await Camera.requestCameraPermissionsAsync();
     setHasCamPermission(status === "granted");
 
-    console.log(micStatus);
-    setMicCamPermission(micStatus == "granted");
+    const { status: micStatus } = await Audio.requestPermissionsAsync();
+    setHasMicPermission(micStatus == "granted");
   }
 
   useEffect(() => {
     requestPermission();
   }, []);
-
-  useEffect(() => {
-    const setSupportedRatio = async () => {
-      if (cameraRef.current) {
-        const supportedRatios =
-          await cameraRef.current.getSupportedRatiosAsync();
-        if (supportedRatios.includes("16:9")) {
-          setRatio("16:9"); // Set your preferred ratio if available
-        }
-      }
-    };
-    setSupportedRatio();
-  }, [cameraRef]);
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
@@ -80,17 +127,30 @@ function PreJoiningScreen({}: Props) {
             </AppText>
           </View>
         )}
+        {isCameraOn && (
+          <View style={styles.wifiCtn}>
+            <Ionicons name="wifi-outline" color={"#36B37E"} size={20} />
+          </View>
+        )}
       </View>
       <View style={styles.controlIconCtn}>
         <View style={styles.leftControlIcons}>
-          <ControlIcon icon="mic-outline" />
           <ControlIcon
-            icon="videocam-off-outline"
-            inActive={!isCameraOn}
-            onPress={() => toggleCamera()}
+            icon={inactiveMic ? "mic-off-outline" : "mic-outline"}
+            inActive={inactiveMic}
+            onPress={toggleMic}
+          />
+          <ControlIcon
+            icon={inactiveCam ? "videocam-off-outline" : "videocam-outline"}
+            inActive={inactiveCam}
+            onPress={toggleCamera}
           />
         </View>
-        <ControlIcon icon="settings-outline" inActive />
+        <ControlIcon
+          icon="settings-outline"
+          inActive
+          onPress={() => setShowModal(true)}
+        />
       </View>
       <View style={styles.detsCtn}>
         <DisplayField title="Akanji J" />
@@ -99,6 +159,9 @@ function PreJoiningScreen({}: Props) {
         </View>
       </View>
       <AppButton title="Konn3ct" style={styles.btn} />
+      <AppModal active={showModal} closeModal={() => setShowModal(false)}>
+        <DeviceSettingsModal closeModal={() => setShowModal(false)} />
+      </AppModal>
     </View>
   );
 }
@@ -124,10 +187,11 @@ const styles = StyleSheet.create({
   },
   cameraCtn: {
     width: "100%",
-    height: heightPixel(264),
+    height: heightPixel(324),
     borderRadius: normalise(16),
     marginTop: pixelSizeVertical(12),
     overflow: "hidden",
+    position: "relative",
   },
   cameraDisabledCtn: {
     width: "100%",
@@ -174,6 +238,17 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: fontPixel(14),
     marginTop: normalise(16),
+  },
+  wifiCtn: {
+    position: "absolute",
+    height: normalise(28),
+    width: normalise(36),
+    borderRadius: normalise(8),
+    backgroundColor: "black",
+    justifyContent: "center",
+    alignItems: "center",
+    bottom: 10,
+    left: 20,
   },
 });
 

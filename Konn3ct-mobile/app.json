@@ -32,6 +32,12 @@
           "microphonePermission": "Allow Konn3ct to access your microphone",
           "recordAudioAndroid": true
         }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Konn3ct to access your microphone."
+        }
       ]
     ]
   }
