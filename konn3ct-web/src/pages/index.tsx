@@ -1,26 +1,13 @@
+import { useState } from "react";
 import Image from "next/image";
 import { Inter } from "next/font/google";
-import {
-  CaptionSVG,
-  HandSVG,
-  MessageSVG,
-  MicrophoneSVG,
-  VideoSVG,
-  PhoneSVG,
-  Recording,
-  RecordSVG,
-  RobotSVG,
-  MoreSVG,
-  Participant,
-  ShareScreenSVG,
-  ShareSVG,
-} from "@/assets/svgs";
 
+import { PhoneSVG, Recording, MoreSVG, Participant } from "@/assets/svgs";
 import ParticipantPopUp from "@/components/ParticipantPopUp";
 import ParticipantAvatar from "@/components/ParticipantAvatar";
-import { useState } from "react";
 import ChangeRoleModal from "@/components/modals/ChangeRoleModal";
 import UserParticipant from "@/components/UserParticipant";
+import { menuMappings } from "@/config/PreviewMenuMappings";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -97,7 +84,7 @@ export default function Home() {
 
       <footer className="bg-[#227451] flex items-center justify-between py-6 px-12">
         <div className="flex items-center justify-between gap-6">
-          {leftIcons.map((item, index) => (
+          {menuMappings.leftIcons.map((item, index) => (
             <div
               className="border rounded-full h-12 w-12 flex items-center justify-center"
               key={index.toString()}
@@ -108,7 +95,7 @@ export default function Home() {
         </div>
         <div className="flex gap-6">
           <div className="flex items-center justify-between gap-6">
-            {middleLeftIcons.map((item, index) => (
+            {menuMappings.middleLeftIcons.map((item, index) => (
               <div
                 className="border rounded-full h-12 w-12 flex items-center justify-center"
                 key={index.toString()}
@@ -124,7 +111,7 @@ export default function Home() {
           </div>
         </div>
         <div className="flex items-center justify-between gap-6">
-          {rightIcons.map((item, index) => (
+          {menuMappings.rightIcons.map((item, index) => (
             <div
               className="border rounded-full h-12 w-12 flex items-center justify-center"
               key={index.toString()}
@@ -150,17 +137,3 @@ export default function Home() {
     </main>
   );
 }
-
-const leftIcons = [{ icon: ShareSVG }, { icon: RecordSVG }, { icon: RobotSVG }];
-const middleLeftIcons = [
-  { icon: MicrophoneSVG },
-  { icon: VideoSVG },
-  { icon: ShareScreenSVG },
-  { icon: MoreSVG },
-];
-
-const rightIcons = [
-  { icon: HandSVG },
-  { icon: CaptionSVG },
-  { icon: MessageSVG },
-];
