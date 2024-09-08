@@ -18,7 +18,13 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "package": "com.tomiwa.Konn3ctmobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -39,6 +45,12 @@
           "microphonePermission": "Allow Konn3ct to access your microphone."
         }
       ]
-    ]
+    ],
+    "owner": "tomiwa",
+    "extra": {
+      "eas": {
+        "projectId": "0015c25e-4f98-4096-9ac6-b8de942b670a"
+      }
+    }
   }
 }
