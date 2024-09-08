@@ -67,7 +67,7 @@ export default function Home() {
             <ParticipantAvatar name="Debbie W" />
             <ParticipantAvatar name="Samuel 0" />
           </div>
-          <div className="flex flex-1 justify-between gap-5">
+          <div className="flex flex-1 justify-center gap-5">
             <UserParticipant src={"/images/vidcallav_left.jpeg"} />
             <UserParticipant
               src={"/images/vidcallav_right.jpeg"}
