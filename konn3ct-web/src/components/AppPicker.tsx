@@ -5,8 +5,8 @@ import { HiChevronDown } from "react-icons/hi";
 export default function AppPicker<T>({
   data,
   selectedItem,
-  setSelectedItem,
   placeholder,
+  setSelectedItem,
   disabled,
 }: PickerProps) {
   return (
